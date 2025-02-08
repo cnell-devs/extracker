@@ -1,60 +1,121 @@
-import { useEffect, useRef, useState } from "react";
-import reactLogo from "../assets/react.svg";
-import viteLogo from "/vite.svg";
-import "../assets/css/App.css";
+
+import { Sankey } from "./Sankey";
+import { StatCards } from "./StatCards";
+import { TransactionsList } from "./TransactionsList";
 
 function App() {
-  const [count, setCount] = useState(0);
-  const effectRan = useRef(false);
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      const response = await fetch("http://localhost:8080/transactions");
-      const data = await response.json();
-      console.log(
-        data.map(({ personalFinanceCategory, amount }) => ({
-          personalFinanceCategory: personalFinanceCategory.primary,
-          amount,
-        }))
-      );
-    };
 
-    try {
-      fetchTransactions();
-    } catch (error) {
-      console.log(error);
-    }
+  // useEffect(() => {
+  //   const fetchTransactions = async () => {
+  //     const response = await fetch("http://localhost:8080/transactions");
+  //     const data = await response.json();
+  //     const parsedData = (
+  //       data.map(({ personalFinanceCategory, amount }) => ({
+  //         personalFinanceCategory: personalFinanceCategory.primary,
+  //         amount,
+  //       }))
+  //     );
+  //     setTransactions(parsedData)
+  //     console.log(parsedData);
 
-    effectRan.current = true; // Mark as executed
+  //   };
 
-    return () => {
-      effectRan.current = false; // Reset on unmount
-    };
-  }, []);
+  //   try {
+  //     fetchTransactions();
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+
+  //   effectRan.current = true; // Mark as executed
+
+  //   return () => {
+  //     effectRan.current = false; // Reset on unmount
+  //   };
+  // }, []);
+
+  const data = [
+    {
+      personalFinanceCategory: "TRANSPORTATION",
+      amount: 6.33,
+    },
+    {
+      personalFinanceCategory: "TRANSPORTATION",
+      amount: 5.4,
+    },
+    {
+      personalFinanceCategory: "TRAVEL",
+      amount: -500,
+    },
+    {
+      personalFinanceCategory: "FOOD_AND_DRINK",
+      amount: 12,
+    },
+    {
+      personalFinanceCategory: "FOOD_AND_DRINK",
+      amount: 4.33,
+    },
+    {
+      personalFinanceCategory: "GENERAL_MERCHANDISE",
+      amount: 89.4,
+    },
+    {
+      personalFinanceCategory: "LOAN_PAYMENTS",
+      amount: 25,
+    },
+    {
+      personalFinanceCategory: "INCOME",
+      amount: -4.22 + 10000,
+    },
+    {
+      personalFinanceCategory: "GENERAL_MERCHANDISE",
+      amount: 1000,
+    },
+    {
+      personalFinanceCategory: "TRAVEL",
+      amount: 500,
+    },
+    {
+      personalFinanceCategory: "ENTERTAINMENT",
+      amount: 500,
+    },
+    {
+      personalFinanceCategory: "GENERAL_MERCHANDISE",
+      amount: 500,
+    },
+    {
+      personalFinanceCategory: "FOOD_AND_DRINK",
+      amount: 500,
+    },
+    {
+      personalFinanceCategory: "GENERAL_MERCHANDISE",
+      amount: 2078.5,
+    },
+    {
+      personalFinanceCategory: "PERSONAL_CARE",
+      amount: 78.5,
+    },
+    {
+      personalFinanceCategory: "GENERAL_SERVICES",
+      amount: 5850,
+    },
+  ];
+
+  const dataMap = new Map();
+  data.forEach((data) => {
+    const catTotal = dataMap.get(data.personalFinanceCategory);
+    dataMap.set(
+      data.personalFinanceCategory,
+      catTotal ? catTotal + data.amount : data.amount
+    );
+  });
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+   dataMap && <div className="grid border-2 place-items-center">
+      <StatCards dataMap={dataMap} />
+      <Sankey dataMap={dataMap} />
+      <TransactionsList data={data} />
+    </div >
   );
 }
 
