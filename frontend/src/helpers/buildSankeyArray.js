@@ -25,7 +25,7 @@ export const buildSankeyArray = (dataMap) => {
   const dataMap2 = new Map(dataMap);
   dataMap2.delete("INCOME");
 
-  const sankeyData = [
+  const sankeyData = [ 
     ["From", "To", "Weight"],
     ["Paychecks", incomeLabel, normalize(income)],
     [incomeLabel, "Expenses", normalize(income)],
