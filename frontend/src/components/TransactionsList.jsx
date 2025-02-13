@@ -1,12 +1,6 @@
-import { Dropdown } from "./subComponents/Dropdown";
-import { useState } from "react";
 import { washCategory } from "../helpers/washCategory";
 
-export const TransactionsList = ({ data }) => {
-  const [selected, setSelected] = useState(null);
-  console.log(
-    new Set(data.map(({ personalFinanceCategory }) => personalFinanceCategory))
-  );
+export const TransactionsList = ({ data, active }) => {
 
   return (
     <>
@@ -16,46 +10,57 @@ export const TransactionsList = ({ data }) => {
           <thead>
             <tr>
               <th></th>
+              <th>Transaction</th>
+              <th>Merchant</th>
               <th>Amount</th>
               <th>
-                <Dropdown
+                {/* {<Dropdown
                   dropdown={{
-                    label: "Category",
-                    items: ["Show All"].concat(
+                    label: "Primary Category",
+                    items: ["SHOW_ALL"].concat(
                       Array.from(
                         new Set(
                           data.map(
                             ({ personalFinanceCategory }) =>
-                              personalFinanceCategory
+                              personalFinanceCategory.primary
                           )
                         )
                       )
                     ),
                   }}
                   setSelected={setSelected}
-                />
+                /> } */}
+                Category
               </th>
-              {/* <th>Favorite Color</th> */}
+              <th>Detailed Category</th>
+              <th>Date</th>
+              <th>Payment Channel</th>
             </tr>
           </thead>
           <tbody>
             {/* row 1 */}
 
             {data
-              .filter(({ personalFinanceCategory }) =>
-                selected
-                  ? selected == "Show All"
-                    ? personalFinanceCategory
-                    : personalFinanceCategory == selected
-                  : personalFinanceCategory
+              .filter(
+                  ({ personalFinanceCategory }) =>
+                active != "SHOW_ALL" ?
+                  personalFinanceCategory.primary == active : personalFinanceCategory
               )
               .map((entry, i) => {
                 return (
                   <tr key={i}>
                     <th>{i + 1}</th>
+                    <td>{entry.name}</td>
+                    <td>{entry.merchantName || "---"}</td>
                     <td>{entry.amount}</td>
-                    <td>{washCategory(entry.personalFinanceCategory)}</td>
-                    {/* <td>Blue</td> */}
+                    <td>
+                      {washCategory(entry.personalFinanceCategory.primary)}
+                    </td>
+                    <td>
+                      {washCategory(entry.personalFinanceCategory.detailed)}
+                    </td>
+                    <td>{new Date(entry.date).toLocaleDateString()}</td>
+                    <td>{washCategory(entry.paymentChannel)}</td>
                   </tr>
                 );
               })}

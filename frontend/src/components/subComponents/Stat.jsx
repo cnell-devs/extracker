@@ -1,6 +1,6 @@
 export const Stat = ({stat}) => {
 
-    console.log(stat.title);
+
 
   return (
     <div className="stat">

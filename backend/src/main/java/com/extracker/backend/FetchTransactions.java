@@ -1,5 +1,8 @@
 package com.extracker.backend;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.plaid.client.ApiClient;
 import com.plaid.client.model.*;
 import com.plaid.client.request.PlaidApi;
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class FetchTransactions {
@@ -76,8 +80,15 @@ public class FetchTransactions {
                 cursor = response.getNextCursor();
 //                log.info(response.toString());
             } while (hasMore || response.getTransactionsUpdateStatus() != TransactionsUpdateStatus.HISTORICAL_UPDATE_COMPLETE);
-
-            System.out.println(added);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            System.out.println(added.stream().map(item -> {
+                try {
+                    return mapper.writeValueAsString(item);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }).collect(Collectors.joining(", ", "{\"transactions\" : [", "]}")));
 // Persist cursor and updated data
 //        database.applyUpdates(itemId, added, modified, removed, cursor);
         } catch (IOException e) {

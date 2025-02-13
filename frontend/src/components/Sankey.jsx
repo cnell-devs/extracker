@@ -1,9 +1,9 @@
 import { Chart } from "react-google-charts";
 import { buildSankeyArray } from "../helpers/buildSankeyArray";
 
-export const Sankey = ({ dataMap }) => {
+export const Sankey = ({ dataMap, active}) => {
 
-const {sankeyData, options} = buildSankeyArray(dataMap)
+const {sankeyData, options} = buildSankeyArray(dataMap, active)
 
   return (<div className="w-3/4">
 

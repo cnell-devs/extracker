@@ -2,6 +2,9 @@
 @plugin "daisyui";
 
 
+body {
+  @apply m-12 border-2
+}
 
 :root {
   /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
