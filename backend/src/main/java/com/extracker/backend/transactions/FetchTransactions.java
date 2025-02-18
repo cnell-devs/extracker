@@ -1,5 +1,7 @@
-package com.extracker.backend;
+package com.extracker.backend.transactions;
 
+import com.extracker.backend.MyRunner;
+import com.extracker.backend.link.Client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -20,33 +22,22 @@ import java.util.stream.Collectors;
 
 @Component
 public class FetchTransactions {
-    FetchToken fetchToken;
-    private PlaidApi plaidClient;
-    @Value("${env.clientId}")
-    String plaidClientId;
-    @Value("${env.secretId}")
-    String plaidSecret;
 
-    public FetchTransactions(FetchToken fetchToken) {
-        this.fetchToken = fetchToken;
+    private PlaidApi plaidClient;
+
+    public FetchTransactions(Client client) {
+        this.plaidClient = client.getPlaidClient();
     }
 
     private static final Logger log = LoggerFactory.getLogger(MyRunner.class);
 
-    void getTransactions() {
-
-        HashMap<String, String> apiKeys = new HashMap<String, String>();
-        apiKeys.put("clientId", plaidClientId);
-        apiKeys.put("secret", plaidSecret);
-        ApiClient apiClient = new ApiClient(apiKeys);
-        apiClient.setPlaidAdapter(ApiClient.Sandbox); // or equivalent, depending on which environment you're calling into
-        plaidClient = apiClient.createService(PlaidApi.class);
+    void getTransactions(String accessToken) {
 
         try {
             // Provide a cursor from your database if you've previously
-// recieved one for the item leave null if this is your
-// first sync call for this item. The first request will
-// return a cursor.
+            // received one for the item leave null if this is your
+            // first sync call for this item. The first request will
+            // return a cursor.
             String cursor = null;// database.getLatestCursorOrNull(itemId);
             // New transaction updates since "cursor"
             List<Transaction> added = new ArrayList<Transaction>();
@@ -56,7 +47,6 @@ public class FetchTransactions {
             TransactionsSyncRequestOptions options = new TransactionsSyncRequestOptions()
                     .includePersonalFinanceCategory(true);
             // get access token
-            String accessToken = fetchToken.getToken();
             log.info(accessToken);
             TransactionsSyncResponse response;
 
@@ -80,19 +70,21 @@ public class FetchTransactions {
                 cursor = response.getNextCursor();
 //                log.info(response.toString());
             } while (hasMore || response.getTransactionsUpdateStatus() != TransactionsUpdateStatus.HISTORICAL_UPDATE_COMPLETE);
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            System.out.println(added.stream().map(item -> {
-                try {
-                    return mapper.writeValueAsString(item);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            }).collect(Collectors.joining(", ", "{\"transactions\" : [", "]}")));
+//            ObjectMapper mapper = new ObjectMapper();
+//            mapper.registerModule(new JavaTimeModule());
+//            System.out.println(added.stream().map(item -> {
+//                try {
+//                    return mapper.writeValueAsString(item);
+//                } catch (JsonProcessingException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }).collect(Collectors.joining(", ", "{\"transactions\" : [", "]}")));
+
 // Persist cursor and updated data
 //        database.applyUpdates(itemId, added, modified, removed, cursor);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
     }
 }
