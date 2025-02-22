@@ -1,7 +1,11 @@
 package com.extracker.backend.db.accounts;
 
 import com.extracker.backend.db.items.ItemEntity;
+import com.extracker.backend.db.transactions.TransactionEntity;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "accounts")
@@ -13,6 +17,10 @@ public class AccountEntity {
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private ItemEntity item; // Foreign Key to Items
+
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // ✅ Allows transactions to include account details
+    private List<TransactionEntity> transactions;
 
     private String name; // TEXT
 

@@ -1,103 +1,75 @@
-import {  useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CatSelector } from "./CatSelector";
 import { Sankey } from "./Sankey";
 import { StatCards } from "./StatCards";
 import { TransactionsList } from "./TransactionsList";
-import dataExample from "./data-example.json";
 
 function Dashboard() {
   const [activeCat, setActiveCat] = useState("SHOW_ALL");
+  const [data, setData] = useState([]); // ✅ Default as empty array
+  const [isLoading, setIsLoading] = useState(false); // ✅ Track API loading state
+  // 🔹 Define fetchTransactions function using useCallback
+  const fetchTransactions = useCallback(async () => {
+    //if (!itemLoaded) return; // ✅ Prevent fetch if item is not loaded
 
+    setIsLoading(true); // ✅ Show loading state
 
-  // useEffect(() => {
-  //   const fetchTransactions = async () => {
-  //     const response = await fetch("http://localhost:8080/transactions");
-  //     const data = await response.json();
-  //     const parsedData = (
-  //       data.map(({ personalFinanceCategory, amount }) => ({
-  //         personalFinanceCategory: personalFinanceCategory.primary,
-  //         amount,
-  //       }))
-  //     );
-  //     setTransactions(parsedData)
-  //     console.log(parsedData);
+    try {
+      const userId = "89cffce4-e2bf-4471-ade1-e0a86d889000";
+      const response = await fetch(
+        `http://localhost:8080/api/transactions/${userId}`
+      );
+      const transactions = await response.json();
 
-  //   };
-
-  //   try {
-  //     fetchTransactions();
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-
-  //   effectRan.current = true; // Mark as executed
-
-  //   return () => {
-  //     effectRan.current = false; // Reset on unmount
-  //   };
-  // }, []);
-
-  const data = dataExample.transactions.map(
-    ({ amount, personalFinanceCategory }) => ({
-      amount,
-      personalFinanceCategory,
-    })
-  );
-  const income = dataExample.transactions.filter(
-    (data) => data.personalFinanceCategory.primary == "INCOME"
-  );
-  const totalIncome = income
-    .map((transaction) => transaction.amount)
-    .reduce((acc, curr) => acc + curr);
-
-
-  const dataMap = new Map();
-  data
-    .filter((data) =>
-      activeCat == "SHOW_ALL"
-        ? data.personalFinanceCategory
-        : data.personalFinanceCategory.primary == activeCat
-    )
-    .forEach((data) => {
-      // console.log(data);
-      // console.log(activeCat);
-
-      if (activeCat == "SHOW_ALL") {
-        const catTotal = dataMap.get(data.personalFinanceCategory.primary);
-
-        dataMap.set(
-          data.personalFinanceCategory.primary,
-          catTotal ? catTotal + data.amount : data.amount
-        );
-      } else {
-          const catTotal = dataMap.get(data.personalFinanceCategory.detailed);
-          dataMap.set("INCOME", totalIncome)
-        dataMap.set(
-          data.personalFinanceCategory.detailed,
-          catTotal ? catTotal + data.amount : data.amount
-        );
+      if (!Array.isArray(transactions)) {
+        throw new Error("Invalid data format from API");
       }
-    });
-  //     setDataMap(dataMap);
-  //   }, [activeCat]);
 
+      // ✅ Parse data correctly
+
+        console.log(transactions);
+
+
+      setData(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    } finally {
+      setIsLoading(false); // ✅ Remove loading state
+    }
+  }, []); // ✅ Only re-create function when `itemLoaded` changes
+
+  // 🔹 Fetch transactions when `itemLoaded` changes
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
 
   return (
-    dataMap && (
-      <div className="grid gap-6 place-items-center">
-        <StatCards data={data} />
-        <CatSelector
-          categories={Array.from(
-            new Set(data.map((cat) => cat.personalFinanceCategory.primary))
-          )}
-          activeCat={activeCat}
-          setActiveCat={setActiveCat}
-        />
-        <Sankey dataMap={dataMap} active={activeCat} />
-        <TransactionsList data={dataExample.transactions} active={activeCat} />
-      </div>
-    )
+    <div className="grid gap-6 place-items-center">
+      {/* ✅ Refresh Button */}
+      <button
+        onClick={fetchTransactions}
+        disabled={isLoading}
+        className={`btn ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        {isLoading ? "Refreshing..." : "Refresh Transactions"}
+          </button>
+
+      {data.length === 0 ? (
+        <p className="text-gray-500">No Transactions Available</p>
+      ) : (
+        <>
+          <StatCards data={data} />
+          <CatSelector
+                          data={data}
+            activeCat={activeCat}
+            setActiveCat={setActiveCat}
+          />
+          <Sankey data={data} active={activeCat} />
+          <TransactionsList data={data} active={activeCat} />
+        </>
+      )}
+    </div>
   );
 }
 

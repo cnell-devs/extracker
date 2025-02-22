@@ -1,17 +1,18 @@
 package com.extracker.backend.db.items;
 
-import com.extracker.backend.db.items.ItemEntity;
-import com.extracker.backend.db.items.ItemRepository;
+import com.extracker.backend.db.accounts.AccountEntity;
+import com.extracker.backend.db.accounts.AccountRepository;
+import com.extracker.backend.db.transactions.TransactionService;
 import com.extracker.backend.db.users.UserEntity;
 import com.extracker.backend.db.users.UserRepository;
 import com.extracker.backend.link.Client;
 import com.plaid.client.request.PlaidApi;
 import com.plaid.client.model.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,14 +22,20 @@ public class ItemService {
     private final PlaidApi plaidClient;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
+    private final TransactionService transactionService;
 
-
-    public ItemService(ItemRepository itemRepository, UserRepository userRepository, Client client) {
+    public ItemService(ItemRepository itemRepository,
+                       UserRepository userRepository,
+                       AccountRepository accountRepository,
+                       Client client, TransactionService transactionService) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
 
         // Initialize Plaid API Client
         this.plaidClient = client.getPlaidClient();
+        this.transactionService = transactionService;
     }
 
     public ItemEntity saveItemFromPlaidResponse(UUID userId, String accessToken) throws IOException {
@@ -57,7 +64,33 @@ public class ItemService {
 
         // Step 4: Save ItemEntity
         ItemEntity itemEntity = new ItemEntity(itemId, user, accessToken, null, bankName, 1);
-        return itemRepository.save(itemEntity);
+        itemEntity = itemRepository.save(itemEntity);
+
+        // Step 5: Fetch and Save Accounts
+        fetchAndSaveAccounts(accessToken, itemEntity, user);
+        transactionService.fetchAndStoreTransactions(userId, null);
+
+        return itemEntity;
+    }
+
+    private void fetchAndSaveAccounts(String accessToken, ItemEntity item, UserEntity user) throws IOException {
+        Response<AccountsGetResponse> response = plaidClient
+                .accountsGet(new AccountsGetRequest().accessToken(accessToken))
+                .execute();
+
+        if (!response.isSuccessful() || response.body() == null) {
+            throw new RuntimeException("Failed to fetch accounts from Plaid");
+        }
+
+        List<AccountBase> plaidAccounts = response.body().getAccounts();
+        for (AccountBase plaidAccount : plaidAccounts) {
+            AccountEntity accountEntity = new AccountEntity(
+                    plaidAccount.getAccountId(),
+                    item,
+                    plaidAccount.getName()
+            );
+            accountRepository.save(accountEntity);
+        }
     }
 
     private String getInstitutionName(String institutionId) {

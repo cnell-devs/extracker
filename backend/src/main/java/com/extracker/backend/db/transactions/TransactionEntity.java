@@ -3,7 +3,7 @@ package com.extracker.backend.db.transactions;
 import com.extracker.backend.db.accounts.AccountEntity;
 import com.extracker.backend.db.users.UserEntity;
 import jakarta.persistence.*;
-import org.springframework.cglib.core.Local;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,34 +13,45 @@ import java.time.LocalDate;
 public class TransactionEntity {
 
     @Id
-    private String id; // TEXT PRIMARY KEY
+    private String id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user; // Foreign Key to Users
+    @JsonIgnore
+    private UserEntity user;
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
-    private AccountEntity account; // Foreign Key to Accounts
+    @JsonIgnore
+    private AccountEntity account;
 
-    private String category;
+    private String primaryCategory;  // ✅ Main category
+    private String detailedCategory; // ✅ Subcategory
+
     private LocalDate date;
     private LocalDate authorizedDate;
     private String name;
+    private String paymentChannel;
+    private String merchant;
 
     @Column(nullable = false)
     private BigDecimal amount;
-
     private String currencyCode;
 
     @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
-    private Integer isRemoved = 0; // Default to 0 (not removed)
+    private Integer isRemoved = 0;
 
-    public TransactionEntity(String id, UserEntity user, AccountEntity account, String category, LocalDate date, LocalDate authorizedDate, String name, BigDecimal amount, String currencyCode, Integer isRemoved) {
+    public TransactionEntity() {
+    }
+
+    public TransactionEntity(String id, UserEntity user, String paymentChannel, String merchant, AccountEntity account, String primaryCategory, String detailedCategory, LocalDate date, LocalDate authorizedDate, String name, BigDecimal amount, String currencyCode, Integer isRemoved) {
         this.id = id;
         this.user = user;
+        this.paymentChannel = paymentChannel;
+        this.merchant = merchant;
         this.account = account;
-        this.category = category;
+        this.primaryCategory = primaryCategory;
+        this.detailedCategory = detailedCategory;
         this.date = date;
         this.authorizedDate = authorizedDate;
         this.name = name;
@@ -73,12 +84,20 @@ public class TransactionEntity {
         this.account = account;
     }
 
-    public String getCategory() {
-        return category;
+    public String getPrimaryCategory() {
+        return primaryCategory;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setPrimaryCategory(String primaryCategory) {
+        this.primaryCategory = primaryCategory;
+    }
+
+    public String getDetailedCategory() {
+        return detailedCategory;
+    }
+
+    public void setDetailedCategory(String detailedCategory) {
+        this.detailedCategory = detailedCategory;
     }
 
     public LocalDate getDate() {
@@ -127,5 +146,21 @@ public class TransactionEntity {
 
     public void setIsRemoved(Integer isRemoved) {
         this.isRemoved = isRemoved;
+    }
+
+    public String getMerchant() {
+        return merchant;
+    }
+
+    public void setMerchant(String merchant) {
+        this.merchant = merchant;
+    }
+
+    public String getPaymentChannel() {
+        return paymentChannel;
+    }
+
+    public void setPaymentChannel(String paymentChannel) {
+        this.paymentChannel = paymentChannel;
     }
 }

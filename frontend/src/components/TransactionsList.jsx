@@ -2,6 +2,7 @@ import { washCategory } from "../helpers/washCategory";
 
 export const TransactionsList = ({ data, active }) => {
 
+
   return (
     <>
       <div className="overflow-x-auto pb-10">
@@ -42,22 +43,22 @@ export const TransactionsList = ({ data, active }) => {
 
             {data
               .filter(
-                  ({ personalFinanceCategory }) =>
+                  ({ primaryCategory }) =>
                 active != "SHOW_ALL" ?
-                  personalFinanceCategory.primary == active : personalFinanceCategory
+                  primaryCategory == active : primaryCategory
               )
               .map((entry, i) => {
                 return (
                   <tr key={i}>
                     <th>{i + 1}</th>
                     <td>{entry.name}</td>
-                    <td>{entry.merchantName || "---"}</td>
+                    <td>{entry.merchant || "---"}</td>
                     <td>{entry.amount}</td>
                     <td>
-                      {washCategory(entry.personalFinanceCategory.primary)}
+                      {washCategory(entry.primaryCategory)}
                     </td>
                     <td>
-                      {washCategory(entry.personalFinanceCategory.detailed)}
+                      {washCategory(entry.detailedCategory)}
                     </td>
                     <td>{new Date(entry.date).toLocaleDateString()}</td>
                     <td>{washCategory(entry.paymentChannel)}</td>

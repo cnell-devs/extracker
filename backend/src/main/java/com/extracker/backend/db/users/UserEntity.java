@@ -3,6 +3,7 @@ package com.extracker.backend.db.users;
 import com.extracker.backend.db.items.ItemEntity;
 import com.extracker.backend.db.transactions.TransactionEntity;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,23 +13,24 @@ import java.util.UUID;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID user_id;
 
     @Column(nullable = false, unique = true)
-    private String username; // TEXT NOT NULL
+    private String username;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore  // ✅ Prevents infinite recursion when serializing UserEntity
     private List<ItemEntity> items;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore  // ✅ Prevents recursion when serializing UserEntity inside TransactionEntity
     private List<TransactionEntity> transactions;
 
     public UserEntity() {
     }
 
-    public UserEntity(UUID id, String username) {
-        this.user_id = id;
+    public UserEntity(UUID user_id, String username) {
+        this.user_id = user_id;
         this.username = username;
     }
 
@@ -36,7 +38,7 @@ public class UserEntity {
         return user_id;
     }
 
-    public void setId(UUID user_id) {
+    public void setId(UUID id) {
         this.user_id = user_id;
     }
 
