@@ -23,7 +23,6 @@ public class Client {
 
     @PostConstruct  // Ensures initialization after Spring injects values
     public void init() {
-
         HashMap<String, String> apiKeys = new HashMap<>();
         apiKeys.put("clientId", CLIENT_ID);
         apiKeys.put("secret", SECRET);

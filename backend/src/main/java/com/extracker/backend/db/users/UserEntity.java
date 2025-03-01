@@ -18,6 +18,13 @@ public class UserEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(nullable = false)
+    @JsonIgnore
+    private String password;
+
+    @Column(nullable = false)
+    private String role = "USER";
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore  // ✅ Prevents infinite recursion when serializing UserEntity
     private List<ItemEntity> items;
@@ -29,9 +36,10 @@ public class UserEntity {
     public UserEntity() {
     }
 
-    public UserEntity(UUID user_id, String username) {
+    public UserEntity(UUID user_id, String username, String password) {
         this.user_id = user_id;
         this.username = username;
+        this.password = password;
     }
 
     public UUID getId() {
@@ -64,5 +72,21 @@ public class UserEntity {
 
     public void setTransactions(List<TransactionEntity> transactions) {
         this.transactions = transactions;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

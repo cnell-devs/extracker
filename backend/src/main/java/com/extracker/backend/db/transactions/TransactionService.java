@@ -14,6 +14,8 @@ import retrofit2.Response;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,13 +40,22 @@ public class TransactionService {
         this.itemRepository = itemRepository;
     }
 
+    public boolean hasLinkedItems(UUID userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<ItemEntity> userItems = itemRepository.findByUser(user);
+        return !userItems.isEmpty();
+    }
+
     public void fetchAndStoreTransactions(UUID userId, String cursor) throws IOException {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<ItemEntity> userItems = itemRepository.findByUser(user);
         if (userItems.isEmpty()) {
-            throw new RuntimeException("No items found for user: " + userId);
+            // Just return early if no items are found
+            return;
         }
 
         for (ItemEntity item : userItems) {
@@ -102,5 +113,20 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return transactionRepository.findByUser(user);
+    }
+
+    public List<TransactionEntity> getUserTransactions(UUID userId, LocalDate startDate, LocalDate endDate) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (startDate == null && endDate == null) {
+            return transactionRepository.findByUser(user);
+        } else if (endDate == null) {
+            return transactionRepository.findByUserAndDateGreaterThanEqual(user, startDate);
+        } else if (startDate == null) {
+            return transactionRepository.findByUserAndDateLessThanEqual(user, endDate);
+        } else {
+            return transactionRepository.findByUserAndDateBetween(user, startDate, endDate);
+        }
     }
 }

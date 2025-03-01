@@ -12,16 +12,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class MyRunner implements CommandLineRunner {
 
-    private Item item;
+    // private Item item;
 
     private static final Logger log = LoggerFactory.getLogger(MyRunner.class);
-    FetchTransactions fetchTransactions;
-    CreateLinkToken createLinkToken;
+    // FetchTransactions fetchTransactions;
+    // CreateLinkToken createLinkToken;
 
-    public MyRunner(FetchTransactions fetchTransactions, CreateLinkToken createLinkToken, Item item) {
-        this.fetchTransactions = fetchTransactions;
-        this.createLinkToken = createLinkToken;
-        this.item = item;
+    public MyRunner(/* FetchTransactions fetchTransactions, CreateLinkToken createLinkToken, Item item */) {
+        // this.fetchTransactions = fetchTransactions;
+        // this.createLinkToken = createLinkToken;
+        // this.item = item;
     }
 
     @Override

@@ -3,8 +3,6 @@ package com.extracker.backend.link;
 import com.plaid.client.ApiClient;
 import com.plaid.client.model.*;
 import com.plaid.client.request.PlaidApi;
-import org.springframework.beans.factory.annotation.Value;
-
 import org.springframework.stereotype.Component;
 import retrofit2.Response;
 
@@ -15,10 +13,9 @@ import java.util.HashMap;
 @Component
 public class CreateLinkToken {
     private static PlaidApi plaidClient;
-    @Value("${env.clientId}")
-    String CLIENT_ID;
-    @Value("${env.secretId}")
-    String SECRET;
+    // Using hardcoded values instead of environment variables
+    private String CLIENT_ID = "67a1762db24d8500202660e4";
+    private String SECRET = "00c3f9bbd09dc0e1285902c8943de6";
 
     public record LinkTokenResponse(String linkToken) {
     }
@@ -59,4 +56,3 @@ public class CreateLinkToken {
 
 
 }
-
